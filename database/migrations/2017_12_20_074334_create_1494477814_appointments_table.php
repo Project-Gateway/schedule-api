@@ -15,8 +15,7 @@ class Create1494477814AppointmentsTable extends Migration
         if(! Schema::hasTable('appointments')) {
             Schema::create('appointments', function (Blueprint $table) {
                 $table->increments('id');
-                $table->integer('client_id')->unsigned()->nullable();
-                $table->foreign('client_id', '35989_5913ebf64ed0b')->references('id')->on('clients')->onDelete('cascade');
+                $table->uuid('client_id');
                 $table->integer('provider_id')->unsigned()->nullable();
                 $table->integer('service_id')->unsigned()->nullable();
                 $table->foreign(['provider_id', 'service_id'])->references(['provider_id', 'service_id'])->on('provider_service')->onDelete('cascade');

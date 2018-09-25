@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ScheduleRequest;
 use App\Models\Appointment;
 use App\Models\Provider;
 use App\Models\WorkingTime;
@@ -10,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\Admin\StoreAppointmentsRequest;
 use App\Http\Requests\Admin\UpdateAppointmentsRequest;
+use Illuminate\Support\Facades\Auth;
 
 class AppointmentsController extends Controller
 {
@@ -57,6 +59,12 @@ class AppointmentsController extends Controller
             return response(null, 501);
         }
 
+        return response($this->findTimeSlots($date, $provider));
+
+    }
+
+    protected function findTimeSlots($date, Provider $provider)
+    {
         $params = explode('-', $date);
         $date = Carbon::createMidnightDate(...$params);
 
@@ -64,8 +72,8 @@ class AppointmentsController extends Controller
 
         $appointments = $provider->appointments()->whereDate('start_time', $date->format('Y-m-d'))->get();
 
-        $appointmentDuration = 40;
-        $appointmentInterval = 60;
+        $appointmentDuration = config('appointments.duration');
+        $appointmentInterval = config('appointments.interval');
 
         $timeSlots = [];
 
@@ -90,16 +98,32 @@ class AppointmentsController extends Controller
             }
         }
 
-        return response($timeSlots);
-
+        return $timeSlots;
     }
 
     /**
      * Schedule a time for the logged client
      */
-    public function schedule()
+    public function schedule(ScheduleRequest $request)
     {
+        $provider = Provider::find($request->provider_id);
 
+        [$date, $time] = explode(' ', $request->time);
+
+        if (array_search($time, $this->findTimeSlots($date, $provider)) === false) {
+            return response(['message' => 'The selected time is unavailable'], 410);
+        }
+
+        $appointment = new Appointment();
+        $appointment->client_id = Auth::id();
+        $appointment->provider_id = $provider->id;
+        $appointment->service_id = (int) $request->service_id;
+        $appointment->start_time = $request->time;
+        $appointment->finish_time = $appointment->start_time->addMinutes(config('appointments.interval'));
+        $appointment->comments = $request->comments;
+        $appointment->save();
+
+        return response(null, 201);
     }
 
     /**
@@ -121,7 +145,7 @@ class AppointmentsController extends Controller
     /**
      * Store a newly created Appointment in storage.
      *
-     * @param  \App\Http\Requests\StoreAppointmentsRequest  $request
+     * @param StoreAppointmentsRequest  $request
      * @return \Illuminate\Http\Response
      */
     public function store(StoreAppointmentsRequest $request)
@@ -149,8 +173,8 @@ class AppointmentsController extends Controller
     /**
      * Update Appointment in storage.
      *
-     * @param  \App\Http\Requests\UpdateAppointmentsRequest  $request
-     * @param  int  $id
+     * @param UpdateAppointmentsRequest $request
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function update(UpdateAppointmentsRequest $request, $id)

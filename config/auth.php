@@ -14,7 +14,7 @@ return [
     */
 
     'defaults' => [
-        'guard' => 'web',
+        'guard' => 'api',
         'passwords' => 'users',
     ],
 
@@ -36,14 +36,8 @@ return [
     */
 
     'guards' => [
-        'web' => [
-            'driver' => 'session',
-            'provider' => 'users',
-        ],
-
         'api' => [
-            'driver' => 'token',
-            'provider' => 'users',
+            'driver' => 'login-api',
         ],
     ],
 
@@ -64,17 +58,11 @@ return [
     |
     */
 
-    'providers' => [
-        'users' => [
-            'driver' => 'eloquent',
-            'model' => App\User::class,
-        ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
-    ],
+//    'providers' => [
+//        'users' => [
+//            'driver' => 'login-api'
+//        ],
+//    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -98,5 +86,7 @@ return [
             'expire' => 60,
         ],
     ],
+
+    'applicationHeader' => 'X-Orion-Application'
 
 ];
