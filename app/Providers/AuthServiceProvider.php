@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Extensions\LoginApiGuard;
-use App\Extensions\LoginApiUserProvider;
 use App\Models\User;
 use GuzzleHttp\Client as HttpClient;
 use Illuminate\Support\Facades\Gate;
@@ -37,16 +35,17 @@ class AuthServiceProvider extends ServiceProvider
             // The application header
             $appName = $request->header(config('auth.applicationHeader'));
 
-            $http = new HttpClient();
+            $http = new HttpClient([
+                'base_uri' => 'http://web/login-api/',
+                'headers' => [
+                    'accept' => 'application/json',
+                    config('auth.applicationHeader') => $appName,
+                    'authorization' => $authHeader
+                ]
+            ]);
 
             try {
-                $response = $http->get('http://web/login-api/auth/validate', [
-                    'headers' => [
-                        'accept' => 'application/json',
-                        config('auth.applicationHeader') => $appName,
-                        'authorization' => $authHeader
-                    ]
-                ]);
+                $response = $http->get('auth/validate');
             } catch (\Throwable $e) {
                 return null;
             }
@@ -55,7 +54,7 @@ class AuthServiceProvider extends ServiceProvider
                 return null;
             }
 
-            return new User(json_decode($response->getBody()));
+            return new User(json_decode($response->getBody()), $http);
 
         });
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use GuzzleHttp\Client as HttpClient;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 /**
@@ -11,6 +12,8 @@ use Illuminate\Contracts\Auth\Authenticatable;
  * @property $lastName
  * @property $phone
  * @property $email
+ * @property $role
+ * @property $loginApi
  */
 class User implements Authenticatable
 {
@@ -20,14 +23,18 @@ class User implements Authenticatable
     protected $lastName;
     protected $phone;
     protected $email;
+    protected $role;
+    protected $loginApi;
 
-    public function __construct($jwtPayload)
+    public function __construct($jwtPayload, HttpClient $loginApi)
     {
         $this->id = $jwtPayload->sub;
         $this->firstName = $jwtPayload->first_name;
         $this->lastName = $jwtPayload->last_name;
         $this->phone = $jwtPayload->phone;
         $this->email = $jwtPayload->emails[0];
+        $this->role = $jwtPayload->role;
+        $this->loginApi = $loginApi;
 
     }
 

@@ -24,7 +24,7 @@ class ScheduleRequest extends FormRequest
     {
         return [
             'service_id' => 'required|integer|exists:services,id',
-            'provider_id' => 'required|integer|exists:providers,id',
+            'provider_id' => 'required',
             'time' => 'required|regex:/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/',
         ];
     }

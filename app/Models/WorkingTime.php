@@ -4,11 +4,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use GuzzleHttp\Client as HttpClient;
 
 /**
  * Class WorkingHour
  *
  * @package App
+ * @property sting $provider_id
  * @property Carbon $date
  * @property Carbon $start_time
  * @property Carbon $finish_time
@@ -33,10 +35,12 @@ class WorkingTime extends Model
         $time = $this->date->format('Y-m-d ') . $this->attributes['finish_time'];
         return Carbon::createFromFormat('Y-m-d H:i:s', $time);
     }
-    
-    public function provider()
+
+    public function getProviderAttribute()
     {
-        return $this->belongsTo(Provider::class, 'provider_id');
+        $response = app('auth')->user()->loginApi->get("users/{$this->provider_id}");
+        $provider = new Provider(json_decode($response->getBody(), true));
+        return $provider;
     }
     
 }

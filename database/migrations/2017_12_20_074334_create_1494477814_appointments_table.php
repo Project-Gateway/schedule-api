@@ -16,9 +16,8 @@ class Create1494477814AppointmentsTable extends Migration
             Schema::create('appointments', function (Blueprint $table) {
                 $table->increments('id');
                 $table->uuid('client_id');
-                $table->integer('provider_id')->unsigned()->nullable();
+                $table->uuid('provider_id');
                 $table->integer('service_id')->unsigned()->nullable();
-                $table->foreign(['provider_id', 'service_id'])->references(['provider_id', 'service_id'])->on('provider_service')->onDelete('cascade');
                 $table->datetime('start_time')->nullable();
                 $table->datetime('finish_time')->nullable();
                 $table->text('comments')->nullable();

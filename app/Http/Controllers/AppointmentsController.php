@@ -28,7 +28,7 @@ class AppointmentsController extends Controller
         $params = explode('-', $date);
         $date = Carbon::createMidnightDate(...$params);
 
-        $workingTimes = WorkingTime::whereDate('date', $date->format('Y-m-d'))->with('provider.services')->get();
+        $workingTimes = WorkingTime::whereDate('date', $date->format('Y-m-d'))->get();
 
         $output = [];
         foreach ($workingTimes as $workingTime) {
@@ -48,25 +48,21 @@ class AppointmentsController extends Controller
     /**
      * Returns the available time slots for a provider, based on a date
      *
-     * @param Provider $provider
+     * @param string $providerId
      * @param $date
      * @return array
      */
-    public function availability($date, ?Provider $provider = null)
+    public function availability($date, string $providerId = null)
     {
-
-        if ($provider === null) {
-            return response(null, 501);
-        }
-
-        return response($this->findTimeSlots($date, $provider));
-
+        return response($this->findTimeSlots($date, $providerId));
     }
 
-    protected function findTimeSlots($date, Provider $provider)
+    protected function findTimeSlots($date, string $providerId)
     {
         $params = explode('-', $date);
         $date = Carbon::createMidnightDate(...$params);
+
+        $provider = Provider::find($providerId);
 
         $workingTimes = $provider->working_times()->whereDate('date', $date->format('Y-m-d'))->get();
 
@@ -98,7 +94,8 @@ class AppointmentsController extends Controller
             }
         }
 
-        return $timeSlots;
+        // use array_values to ensure that it will be interpreted as an array (not object) on the frontend
+        return array_values($timeSlots);
     }
 
     /**
@@ -110,7 +107,7 @@ class AppointmentsController extends Controller
 
         [$date, $time] = explode(' ', $request->time);
 
-        if (array_search($time, $this->findTimeSlots($date, $provider)) === false) {
+        if (array_search($time, $this->findTimeSlots($date, $provider->id)) === false) {
             return response(['message' => 'The selected time is unavailable'], 410);
         }
 

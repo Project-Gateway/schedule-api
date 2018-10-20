@@ -14,8 +14,7 @@ class CreateProviderServiceTable extends Migration
     public function up()
     {
         Schema::create('provider_service', function (Blueprint $table) {
-            $table->integer('provider_id')->unsigned();
-			$table->foreign('provider_id')->references('id')->on('providers');
+            $table->uuid('provider_id');
 			$table->integer('service_id')->unsigned();
 			$table->foreign('service_id')->references('id')->on('services');
 			$table->primary(['provider_id', 'service_id']);

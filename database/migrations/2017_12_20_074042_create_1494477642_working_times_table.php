@@ -15,11 +15,7 @@ class Create1494477642WorkingTimesTable extends Migration
         if(! Schema::hasTable('working_times')) {
             Schema::create('working_times', function (Blueprint $table) {
                 $table->increments('id');
-                $table->integer('provider_id')->unsigned();
-                $table->foreign('provider_id')
-                    ->references('id')
-                    ->on('providers')
-                    ->onDelete('cascade');
+                $table->uuid('provider_id');
                 $table->date('date')->nullable();
                 $table->time('start_time');
                 $table->time('finish_time')->nullable();
