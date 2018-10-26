@@ -1,4 +1,5 @@
 <?php
+$x = microtime(true);
 
 /**
  * Laravel - A PHP Framework For Web Artisans
@@ -55,6 +56,7 @@ $response = $kernel->handle(
     $request = Illuminate\Http\Request::capture()
 );
 
+var_dump(microtime(true) - $x);
 $response->send();
 
 $kernel->terminate($request, $response);

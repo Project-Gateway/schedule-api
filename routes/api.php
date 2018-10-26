@@ -13,6 +13,10 @@ use Illuminate\Http\Request;
 |
 */
 
+Route::get('/test', function() {
+    return 'test';
+});
+
 Route::group(['middleware' => ['auth']], function () {
     Route::get('/clients', 'ClientsController@index');
     Route::get('/clients/{client}', 'ClientsController@show');
@@ -21,6 +25,13 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/appointments/{date}', 'AppointmentsController@servicesByDate')->where('date', '^\d{4}-\d{2}-\d{2}');
     Route::get('/availability/{date}/{provider?}', 'AppointmentsController@availability')->where('date', '^\d{4}-\d{2}-\d{2}');
     Route::post('/appointments/schedule', 'AppointmentsController@schedule');
+
+    Route::get('/working-times/{year}/{week}','WorkingTimesController@byWeek')
+        ->where(['year' => '^[0-9]{4}$', 'week' => '^[0-9]+$']);
+
+    Route::post('/working-times', 'WorkingTimesController@store');
+
+    Route::put('/working-times/{workingTime}', 'WorkingTimesController@update');
 });
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {

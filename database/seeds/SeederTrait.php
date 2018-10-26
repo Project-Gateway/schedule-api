@@ -4,7 +4,7 @@ namespace Database\seeds;
 
 trait SeederTrait
 {
-    protected function seedData($table, $fields, $data, $key = ['id'])
+    protected function seedData($table, $fields, $data, $key = ['id'], $updateSeq = true, $seqValue = 100, $seqName = null)
     {
 
         $insertData = array_map(function ($item) use ($fields) {
@@ -23,6 +23,14 @@ trait SeederTrait
             } else {
                 app('db')->table($table)->insert($row);
             }
+        }
+
+        if ($updateSeq) {
+            if ($seqName === null) {
+                $seqName = "{$table}_{$keys[0]}_seq";
+            }
+
+            app('db')->statement("ALTER SEQUENCE $seqName RESTART WITH $seqValue;");
         }
     }
 }

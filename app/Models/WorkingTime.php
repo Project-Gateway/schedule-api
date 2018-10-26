@@ -42,5 +42,12 @@ class WorkingTime extends Model
         $provider = new Provider(json_decode($response->getBody(), true));
         return $provider;
     }
+
+    public function scopeFromInterval($query, string $userId, Carbon $start, Carbon $end)
+    {
+        return $query
+            ->where('provider_id', $userId)
+            ->whereBetween('date', [$start, $end]);
+    }
     
 }
