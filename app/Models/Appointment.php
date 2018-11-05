@@ -37,14 +37,25 @@ class Appointment extends Model
         $this->attributes['start_time'] = $value . ':00';
     }
     
-    public function provider()
+    public function getProviderAttribute()
     {
-        return $this->belongsTo(Provider::class, 'provider_id')->withTrashed();
+        return Provider::find($this->provider_id);
+    }
+
+    public function getClientAttribute()
+    {
+        return Client::find($this->client_id);
     }
 	
     public function service()
     {
-        return $this->belongsTo(Service::class, 'service_id')->withTrashed();
-    }	
+        return $this->belongsTo(Service::class, 'service_id');
+    }
+
+    public function scopeFromInterval($query, Carbon $start, Carbon $end)
+    {
+        return $query
+            ->whereBetween('start_time', [$start, $end]);
+    }
     
 }

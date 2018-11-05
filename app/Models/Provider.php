@@ -34,7 +34,7 @@ class Provider
     public static function find($id)
     {
         $response = app('auth')->user()->loginApi->get("users/{$id}");
-        return new Provider(json_decode($response->getBody(), true));
+        return new self(json_decode($response->getBody(), true));
     }
 
     public function __get($name)

@@ -119,4 +119,9 @@ class ClientsController extends Controller
         }
     }
 
+    public function appointments(Client $client)
+    {
+        return $client;
+    }
+
 }

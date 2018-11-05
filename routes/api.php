@@ -26,12 +26,18 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/availability/{date}/{provider?}', 'AppointmentsController@availability')->where('date', '^\d{4}-\d{2}-\d{2}');
     Route::post('/appointments/schedule', 'AppointmentsController@schedule');
 
-    Route::get('/working-times/{year}/{week}','WorkingTimesController@byWeek')
+    Route::get('/working-times/{year}/{week}/{provider?}','WorkingTimesController@byWeek')
         ->where(['year' => '^[0-9]{4}$', 'week' => '^[0-9]+$']);
 
-    Route::post('/working-times', 'WorkingTimesController@store');
+    Route::post('/working-times/{provider?}', 'WorkingTimesController@store');
 
-    Route::put('/working-times/{workingTime}', 'WorkingTimesController@update');
+    Route::put('/working-times/{workingTime}/{provider?}', 'WorkingTimesController@update');
+
+    Route::get('/appointments/{year}/{week}', 'AppointmentsController@byWeek')
+        ->where(['year' => '^[0-9]{4}$', 'week' => '^[0-9]+$']);
+
+    Route::get('/appointments/internal/{year}/{week}', 'AppointmentsController@byWeekInternal')
+        ->where(['year' => '^[0-9]{4}$', 'week' => '^[0-9]+$']);
 });
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {

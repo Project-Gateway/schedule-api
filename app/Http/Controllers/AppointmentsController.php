@@ -130,13 +130,79 @@ class AppointmentsController extends Controller
      */
     public function index()
     {
-        if (! Gate::allows('appointment_access')) {
-            return abort(401);
+        return Appointment::all();
+    }
+
+    public function byWeek(Request $request, $year, $week)
+    {
+        $date = new Carbon();
+        $date->setISODate($year, $week);
+        // loads data from the previous and next 2 weeks.
+        $start = $date->copy()->subWeeks(2);
+        $end = $date->copy()->addWeeks(3);
+
+        // gets just the id, service, provider, start and end times
+        $times = [];
+        $appointments = Appointment::with(['service'])
+            ->fromInterval($start, $end)
+            ->where('client_id', $request->user()->id)
+            ->get();
+        foreach ($appointments as $appointment) {
+            $provider = $appointment->provider;
+            $times[] = [
+                'id' => $appointment->id,
+                'service' => $appointment->service->name,
+                'provider' => "$provider->first_name $provider->last_name",
+                'start' => $appointment->start_time->format('Y-m-d H:i:s'),
+                'end' => $appointment->finish_time->format('Y-m-d H:i:s'),
+            ];
         }
 
-        $appointments = Appointment::all();
+        return [
+            'interval' => [
+                'start' => $start->format('Y-m-d'),
+                'end' => $end->format('Y-m-d'),
+            ],
+            'times' => $times,
+        ];
 
-        return view('admin.appointments.index', compact('appointments'));
+        return Appointment::where('client_id', $request->user()->id)->get();
+    }
+
+    public function byWeekInternal(Request $request, $year, $week)
+    {
+        $date = new Carbon();
+        $date->setISODate($year, $week);
+        // loads data from the previous and next 2 weeks.
+        $start = $date->copy()->subWeeks(2);
+        $end = $date->copy()->addWeeks(3);
+
+        // gets just the id, service, customer, start and end times
+        $times = [];
+        $appointments = Appointment::with(['service'])
+            ->fromInterval($start, $end)
+            ->where('provider_id', $request->user()->id)
+            ->get();
+        foreach ($appointments as $appointment) {
+            $client = $appointment->client;
+            $times[] = [
+                'id' => $appointment->id,
+                'service' => $appointment->service->name,
+                'customer' => "$client->first_name $client->last_name",
+                'start' => $appointment->start_time->format('Y-m-d H:i:s'),
+                'end' => $appointment->finish_time->format('Y-m-d H:i:s'),
+            ];
+        }
+
+        return [
+            'interval' => [
+                'start' => $start->format('Y-m-d'),
+                'end' => $end->format('Y-m-d'),
+            ],
+            'times' => $times,
+        ];
+
+        return Appointment::where('client_id', $request->user()->id)->get();
     }
 
     /**

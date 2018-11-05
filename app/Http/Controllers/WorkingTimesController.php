@@ -12,11 +12,13 @@ class WorkingTimesController extends Controller
 {
 
     /**
+     * @param Request $request
      * @param $year
      * @param $week
+     * @param null|string $provider
      * @return array
      */
-    public function byWeek(Request $request, $year, $week)
+    public function byWeek(Request $request, $year, $week, ?string $provider = null)
     {
         $date = new Carbon();
         $date->setISODate($year, $week);
@@ -31,7 +33,7 @@ class WorkingTimesController extends Controller
                 'start' => $item['start_time']->format('Y-m-d H:i:s'),
                 'end' => $item['finish_time']->format('Y-m-d H:i:s'),
             ];
-        }, WorkingTime::fromInterval($request->user()->id, $start, $end)->get()->toArray());
+        }, WorkingTime::fromInterval($provider ?? $request->user()->id, $start, $end)->get()->toArray());
 
         return [
             'interval' => [
@@ -42,12 +44,18 @@ class WorkingTimesController extends Controller
         ];
     }
 
-    public function store(WorkingTime $workingTime, CreateWorkingTime $request)
+    /**
+     * @param WorkingTime $workingTime
+     * @param CreateWorkingTime $request
+     * @param null|string $provider
+     * @return array
+     */
+    public function store(WorkingTime $workingTime, CreateWorkingTime $request, ?string $provider = null)
     {
         $workingTime->date = $request->date;
         $workingTime->start_time = $request->start_time;
         $workingTime->finish_time = $request->finish_time;
-        $workingTime->provider_id = $request->user()->id;
+        $workingTime->provider_id = $provider ?? $request->user()->id;
         $workingTime->save();
         $response = $workingTime->toArray();
         $response['date'] = $response['start_time']->format('Y-m-d');
@@ -56,6 +64,12 @@ class WorkingTimesController extends Controller
         return $response;
     }
 
+    /**
+     * @param WorkingTime $workingTime
+     * @param UpdateWorkingTime $request
+     * @return WorkingTime
+     * @internal param null|string $provider
+     */
     public function update(WorkingTime $workingTime, UpdateWorkingTime $request)
     {
         $workingTime->date = $request->date;
